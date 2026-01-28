@@ -1,0 +1,286 @@
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #f2f4f8;
+        padding: 20px;
+    }
+
+    .quiz-box {
+        max-width: 600px;
+        margin: auto;
+        background: #fff;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .progress {
+        font-size: 14px;
+        color: #555;
+        margin-bottom: 10px;
+    }
+
+    .question {
+        font-weight: bold;
+        margin-bottom: 15px;
+    }
+
+    .option {
+        display: block;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        margin-bottom: 8px;
+        cursor: pointer;
+    }
+
+    .option:hover {
+        background: #eef3ff;
+    }
+
+    .option.correct {
+        background: #d1fae5;
+        border-color: #10b981;
+    }
+
+    .option.wrong {
+        background: #fee2e2;
+        border-color: #ef4444;
+    }
+
+    button {
+        margin-top: 15px;
+        padding: 10px 15px;
+        background: #2563eb;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+    }
+
+    button:disabled {
+        background: #9ca3af;
+        cursor: not-allowed;
+    }
+
+    .score {
+        text-align: center;
+        font-size: 20px;
+        font-weight: bold;
+    }
+
+    .status {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 12px;
+    color: #374151;
+}
+
+.option.correct {
+    background: #dcfce7;
+    border-color: #22c55e;
+    color: inherit;
+}
+
+.option.wrong {
+    background: #fee2e2;
+    border-color: #ef4444;
+    color: inherit;
+}
+
+.option.selected {
+    background: #e0e7ff;
+    border-color: #2563eb;
+}
+
+
+
+</style>
+</head>
+
+<div class="quiz-box">
+
+    <!-- TOP STATUS -->
+    <div class="status">
+        <span id="progress"></span>
+        <span id="score"></span>
+    </div>
+
+    <div class="question" id="question"></div>
+    <div id="options"></div>
+
+    <button id="nextBtn" onclick="nextQuestion()" disabled>Next</button>
+
+</div>
+
+
+<script>
+    const rawQA = `1|Apa yang dimaksud dengan elemen catu daya?|Alat penyimpan energi|Alat pengatur sinyal|Alat yang berfungsi menyuplai daya listrik ke beban|Alat pengaman rangkaian|c|
+2|Apa yang dimaksud dengan beban listrik?|Sumber listrik|Alat pengaman|Alat yang membutuhkan sumber listrik untuk dapat bekerja|Pengatur arus|c|
+3|Apa yang dimaksud dengan tegangan listrik?|Besar arus listrik yang melewati penampang konduktor|Resistansi listrik yang menghambat aliran arus dalam rangkaian|Beda potensial yang mendorong aliran arus dalam rangkaian|Banyaknya energi listrik yang mengalir dalam rangkaian|c|
+4|Berapakah tegangan baterai yang dibutuhkan untuk menghidupkan handphone?|± 3V|± 3,5V|± 3,85V|± 5V|c|
+5|Berapakah besar tegangan VBAT?|± 3V|± 3,5V|± 3.85|± 5V|c|
+7|Apa yang dimaksud dengan tegangan nominal pada peralatan elektronik?|Tegangan maksimum yang ditetapkan oleh produsen agar peralatan bekerja normal|Tegangan minimum yang ditetapkan oleh produsen agar peralatan bekerja normal|Tegangan rata-rata yang ditetapkan oleh produsen agar peralatan bekerja normal|Tegangan cadangan yang ditetapkan oleh produsen agar peralatan bekerja normal|c|
+8|Apa yang terjadi jika tegangan suplai lebih kecil dari tegangan nominal?|Peralatan bekerja normal|Peralatan menjadi panas|Peralatan tidak dapat bekerja|Peralatan bekerja lebih cepat|c|
+9|Apa yang terjadi jika tegangan suplai lebih besar dari tegangan nominal?|Peralatan aman|Peralatan bekerja normal|Menimbulkan panas dan berpotensi terbakar|Tidak berpengaruh|c|
+10|Apa fungsi utama PSU (Power Supply Unit)?|Mengukur arus|Mengatur sinyal|Menyuplai daya ke peralatan elektronik|Menyimpan energi|c|
+11|Salah satu fungsi PSU adalah?|Mengisi memori|Mendeteksi short dan kondisi abnormal|Menguatkan sinyal|Mengatur frekuensi|b|
+12|Salah satu fungsi PSU adalah?|Mengganti baterai|Menghidupkan handphone tanpa baterai|Mengisi IC|Menghapus data|b|
+13|Apa yang harus dilakukan teknisi sebelum menghubungkan PSU ke handphone?|Menaikkan arus|Menurunkan tegangan|Menyesuaikan tegangan output sesuai tegangan nominal baterai|Menghubungkan langsung|c|
+14|Apa yang harus dilakukan sebelum menggunakan PSU?|Mengganti probe|Mengatur mode AC|Mengatur pembatas arus (OCP)|Mengatur frekuensi|c|
+15|Apa yang harus dilakukan sebelum menghubungkan kabel PSU ke mesin handphone?|Membersihkan kabel|Memastikan polaritas (+) dan (-) tidak terbalik|Menaikkan arus|Menurunkan tegangan|b|
+16|Apa akibat menyepelekan pengaturan PSU?|PSU rusak|Handphone mati sementara|Kerusakan serius pada mainboard|Tidak berpengaruh|c|
+17|Mengapa tegangan output PSU perlu diukur sebelum digunakan?|Untuk menaikkan daya|Untuk menghemat listrik|Memastikan tegangan sesuai dengan indikator PSU|Untuk menurunkan arus|c|
+18|Bagaimana cara mengukur tegangan output PSU?|Mode ohm, probe merah ke (+) dan hitam ke (-)|Mode dioda, probe merah ke (+) dan hitam ke (-)|Multimeter mode DC, probe merah ke (+) dan hitam ke (-)|Mode AC, probe merah ke (+) dan hitam ke (-)|c|
+19|Jenis baterai yang umum digunakan pada handphone adalah?|Ni-Cd|Ni-MH|Lithium-Polymer (Li-Po)|Lead Acid|c|
+20|Salah satu peran baterai pada handphone adalah?|Menyimpan data|Menyediakan tegangan utama|Menguatkan sinyal|Mengatur arus|b|
+21|Salah satu peran baterai pada handphone adalah?|Mengatur tegangan IC|Menyuplai arus tinggi saat dibutuhkan sistem|Mendinginkan sistem|Mengisi memori|b|
+22|Komponen yang terdapat pada baterai handphone adalah?|Resistor|Kapasitor|BMS|Induktor|c|
+23|Apa kepanjangan dari BMS?|Battery Monitoring System|Battery Management System|Board Management System|Battery Main Supply|b|
+24|Salah satu fungsi BMS adalah?|Menguatkan sinyal|Mengontrol proses charging dan discharging|Menyimpan arus|Mengatur frekuensi|b|
+25|Salah satu komponen pada baterai adalah?|IC Power|Fuse|Resistor|Dioda|b|
+26|Apa fungsi fuse baterai?|Menaikkan arus|Menurunkan tegangan|Pengaman terhadap arus berlebih|Pengatur suhu|c|
+27|Bagaimana cara kerja fuse baterai?|Menyimpan energi|Menguatkan arus|Putus saat arus berlebih untuk melindungi baterai|Mengatur tegangan|c|
+28|Salah satu komponen pada baterai adalah?|Flexible baterai|IC RF|Kapasitor|Induktor|a|
+29|Salah satu komponen pada baterai adalah?|Speaker|Konektor baterai|Mikrofon|Kamera|b|
+30|Manakah yang termasuk sistem proteksi baterai?|Overclock protection|Overcharge protection|Overvoltage IC|Short circuit IC|b|
+31|Apa yang dimaksud proteksi overcharge pada baterai?|Proteksi saat baterai kosong|Proteksi saat suhu tinggi|Proteksi saat baterai diisi melebihi kapasitas|Proteksi arus kecil|c|
+32|Manakah yang termasuk sistem proteksi baterai?|Overdischarge protection|Overclock protection|Overboost protection|Oversignal protection|a|
+33|Apa yang dimaksud proteksi overdischarge pada baterai?|Proteksi suhu tinggi|Proteksi arus tinggi|Proteksi saat tegangan sel terlalu rendah|Proteksi saat tegangan tinggi|c|
+34|Manakah yang termasuk sistem proteksi baterai?|Overtemperature protection|Overclock protection|Overboost protection|Oversignal protection|a|
+35|Apa yang dimaksud proteksi overtemperature pada baterai?|Proteksi saat arus besar|Proteksi saat tegangan rendah|Proteksi saat suhu melebihi batas aman|Proteksi saat baterai penuh|c|
+36|Manakah yang termasuk sistem proteksi baterai?|Overcurrent protection|Overspeed protection|Overboost protection|Overclock protection|a|
+37|Apa yang dimaksud proteksi overcurrent pada baterai?|Proteksi suhu tinggi|Proteksi saat arus melebihi batas|Proteksi tegangan rendah|Proteksi kapasitas|b|
+38|Apa yang terjadi saat sistem proteksi baterai aktif?|Baterai rusak total|Baterai terlihat tidak berfungsi meskipun sel masih baik|Handphone menyala normal|Tegangan meningkat|b|
+39|Kerusakan yang umum terjadi pada baterai adalah?|IC short|Baterai kembung|Speaker rusak|Kamera rusak|b|
+40|Kerusakan yang umum terjadi pada baterai adalah?|Fuse putus|IC RF rusak|CPU mati|Baseband error|a|
+41|Kerusakan yang umum terjadi pada baterai adalah?|Tegangan terlalu rendah|Tegangan terlalu tinggi|Arus terlalu besar|Suhu rendah|a|
+42|Kerusakan yang umum terjadi pada baterai adalah?|Flexible baterai putus|IC audio rusak|Speaker mati|LCD blank|a|
+43|Apa yang dimaksud dengan jumper fuse baterai?|Mengganti fuse|Menyambung kedua pin fuse dengan kawat penghantar|Melepas fuse|Menggandakan fuse|b|
+44|Apa efek samping dari jumper fuse baterai?|Meningkatkan daya|Menghilangkan sistem pengaman baterai|Menurunkan tegangan|Menghemat arus|b|
+45|Apa yang dimaksud dengan tembak baterai?|Penggantian baterai|Pengosongan baterai|Pengisian manual dengan PSU secara bertahap|Pendinginan baterai|c|
+46|Kapan prosedur tembak baterai dilakukan?|Saat baterai penuh|Saat baterai panas|Saat baterai low voltage|Saat baterai normal|c|
+47|Aspek K3 dalam penanganan baterai adalah?|Menghubungkan langsung ke PSU|Menghindari short circuit|Menaikkan arus|Menurunkan tegangan|b|
+48|Aspek K3 dalam penanganan baterai adalah?|Menusuk baterai|Memanaskan baterai|Tidak menusuk atau memanaskan baterai|Merendam baterai|c|
+49|Aspek K3 dalam penanganan baterai adalah?|Mendekatkan ke air|Menjauhkan baterai dari air|Mencuci baterai|Menyimpan di air|b|
+
+`
+function shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+}
+
+function parseQuiz(text) {
+    return text.trim().split("\n").map(line => {
+        const [, question, a, b, c, d, key] = line.split("|");
+        const choices = [a, b, c, d];
+        return {
+            question,
+            choices,
+            correct: choices[{ a: 0, b: 1, c: 2, d: 3 }[key]]
+        };
+    });
+}
+
+// ---------- INIT ----------
+let quiz = parseQuiz(rawQA);
+shuffle(quiz);
+quiz.forEach(q => shuffle(q.choices));
+
+let current = 0;
+let score = 0;
+let selectedAnswer = null;
+let locked = false;
+
+// ---------- RENDER ----------
+function renderQuestion() {
+    selectedAnswer = null;
+    locked = false;
+
+    document.getElementById("nextBtn").disabled = true;
+
+    const q = quiz[current];
+
+    document.getElementById("progress").innerText =
+        `Question ${current + 1} of ${quiz.length}`;
+
+    document.getElementById("score").innerText =
+        `Right ${score} of ${quiz.length}`;
+
+    document.getElementById("question").innerText = q.question;
+
+    const optDiv = document.getElementById("options");
+    optDiv.innerHTML = "";
+
+    q.choices.forEach(opt => {
+        const div = document.createElement("div");
+        div.className = "option";
+        div.innerText = opt;
+
+        div.onclick = () => {
+            if (locked) return;
+
+            document.querySelectorAll(".option")
+                .forEach(o => o.classList.remove("selected"));
+
+            div.classList.add("selected");
+            selectedAnswer = opt;
+            document.getElementById("nextBtn").disabled = false;
+        };
+
+        optDiv.appendChild(div);
+    });
+}
+
+// ---------- NEXT ----------
+function nextQuestion() {
+    if (locked || selectedAnswer === null) return;
+    locked = true;
+
+    const correct = quiz[current].correct;
+    const options = document.querySelectorAll(".option");
+
+    options.forEach(opt => {
+    if (opt.classList.contains("selected")) {
+        opt.classList.remove("selected"); // 🔥 important
+    }
+
+    if (opt.innerText === correct && selectedAnswer === correct) {
+        opt.classList.add("correct");
+    }
+
+    if (opt.innerText === selectedAnswer && selectedAnswer !== correct) {
+        opt.classList.add("wrong");
+    }
+});
+
+
+    if (selectedAnswer === correct) {
+        score++;
+        document.getElementById("score").innerText =
+            `Right ${score} of ${quiz.length}`;
+    }
+
+    setTimeout(() => {
+        current++;
+        if (current < quiz.length) {
+            renderQuestion();
+        } else {
+            document.querySelector(".quiz-box").innerHTML =
+                `<div class="score">
+                    Quiz Finished<br>
+                    Final Score: ${score} / ${quiz.length}
+                </div>`;
+        }
+    }, 1200);
+}
+
+
+// ---------- START ----------
+renderQuestion();
+
+</script>
